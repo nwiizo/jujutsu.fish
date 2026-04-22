@@ -42,7 +42,7 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
         | fzf --ansi --no-sort \
               --prompt='jj workspace > ' \
               --delimiter='\t' --with-nth=1 \
-              --preview='jj --color=always -R {2} status 2>&1 | head -30' \
+              --preview='jj --color=always --ignore-working-copy -R {2} status 2>&1 | head -30' \
               --preview-window='right:55%:wrap'
     )
     test -z "$selection"; and return 130
