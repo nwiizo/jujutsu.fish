@@ -6,16 +6,20 @@ function jj_configure_bindings --description 'Configure key bindings for jujutsu
     #       --log=\cj \        # Ctrl-J
     #       --bookmark=\ck \   # Ctrl-K
     #       --op= \            # '' disables
-    #       --workspace=\cy
+    #       --workspace=\cy \
+    #       --status=\cu \
+    #       --squash=\cs
     #
     # Defaults (all off). Passing an empty value explicitly disables a
     # binding, matching fzf.fish's convention.
 
-    argparse 'log=?' 'bookmark=?' 'op=?' 'workspace=?' -- $argv
+    argparse 'log=?' 'bookmark=?' 'op=?' 'workspace=?' 'status=?' 'squash=?' -- $argv
     or return 2
 
     set -q _flag_log; and test -n "$_flag_log"; and bind $_flag_log jj_fzf_log
     set -q _flag_bookmark; and test -n "$_flag_bookmark"; and bind $_flag_bookmark jj_fzf_bookmark
     set -q _flag_op; and test -n "$_flag_op"; and bind $_flag_op jj_fzf_op
     set -q _flag_workspace; and test -n "$_flag_workspace"; and bind $_flag_workspace jj_fzf_workspace
+    set -q _flag_status; and test -n "$_flag_status"; and bind $_flag_status jj_fzf_status
+    set -q _flag_squash; and test -n "$_flag_squash"; and bind $_flag_squash jj_squash_into
 end

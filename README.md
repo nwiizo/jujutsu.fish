@@ -8,6 +8,20 @@ Designed for people who already run a coding agent (Claude Code, Codex,
 Aider) in parallel sessions and want jj's workspace model to be as
 friction-free as `git worktree` was with `workspace.fish`.
 
+## Jobs this plugin hires itself to do
+
+| When I want to… | Use |
+|---|---|
+| Type jj commands fast | ~30 curated abbreviations under a single `j` prefix |
+| Pick a revision from `jj log` with a preview | `jj_fzf_log` |
+| Pick a bookmark by name with a preview | `jj_fzf_bookmark` |
+| Pick an operation to undo/restore to | `jj_fzf_op` |
+| Jump between parallel workspaces | `jj_fzf_workspace` |
+| See at a glance which agent workspace is dirty | `jj_agent_list` |
+| Review the files an agent just changed and open one | `jj_fzf_status` |
+| Squash the current change into a chosen revision | `jj_squash_into` |
+| Spin up a new parallel agent session, in $EDITOR or tmux | `jj_agent <name>` / `jj_agent <name> --tmux` |
+
 ## Why another jj plugin?
 
 - **Single-letter prefix** (`j`) — shortest keystrokes for the commands you
@@ -104,6 +118,8 @@ Available pickers:
 - `jj_fzf_bookmark` — select a bookmark name, insert it
 - `jj_fzf_op` — select an operation id, insert it
 - `jj_fzf_workspace` — select a workspace and `cd` into it
+- `jj_fzf_status` — select a changed file in the working copy and open it in `$EDITOR`
+- `jj_squash_into` — select a target revision and squash `@` into it (with confirm)
 
 ### Agent workspace helper
 
@@ -120,6 +136,25 @@ jj_agent refactor -e 'claude'
 
 `$jujutsu_agent_root` controls where workspaces are placed (defaults to
 the parent of your main workspace).
+
+Inspect running agent workspaces at a glance:
+
+```fish
+jj_agent_list
+# NAME                  CHANGE      STATE   DESCRIPTION
+# default               qqwkkopr    clean   wire auth
+# fix-login             xpmzzqor    dirty   WIP: claude-code session
+# refactor-db           ttmnorqs    dirty   codex pass 2
+```
+
+## Future ideas (not in v0.1)
+
+- `jj_agent_prune` — detect workspaces whose change is merged or abandoned
+  and remove them with confirmation.
+- `JUJUTSU_FISH_CONFIRM=1` — opt-in wrappers around `jj abandon` and
+  `jj op restore` that prompt before acting.
+
+Filing issues / PRs welcome.
 
 ## License
 

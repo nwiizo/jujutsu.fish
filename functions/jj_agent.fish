@@ -1,12 +1,15 @@
 function jj_agent --description 'Create a jj workspace for a parallel coding-agent session and open it'
     # Usage:
-    #   jj_agent <workspace-name> [-r <revset>] [-e <editor>]
+    #   jj_agent <workspace-name> [-r <revset>] [-e <editor>] [--tmux]
     #
     # Creates a new jj workspace whose name is <workspace-name>, based at
     # <revset> (default: current `@`). The workspace directory is placed at
     # $jujutsu_agent_root/<workspace-name> (default: ../<workspace-name>),
     # then opened with $editor (default: $EDITOR, falling back to printing
     # the path for manual cd).
+    #
+    # With --tmux, opens the workspace in a new tmux window inside the
+    # current session instead of in $editor. Requires $TMUX to be set.
     #
     # Intended for coding-agent workflows where each agent session lives in
     # its own working copy. Non-destructive: it never rewrites existing
@@ -17,18 +20,18 @@ function jj_agent --description 'Create a jj workspace for a parallel coding-age
         return 127
     end
 
-    argparse 'r/revset=' 'e/editor=' h/help -- $argv
+    argparse 'r/revset=' 'e/editor=' tmux h/help -- $argv
     or return 2
 
     if set -q _flag_help
-        echo 'Usage: jj_agent <workspace-name> [-r <revset>] [-e <editor>]'
+        echo 'Usage: jj_agent <workspace-name> [-r <revset>] [-e <editor>] [--tmux]'
         return 0
     end
 
     set -l name $argv[1]
     test -z "$name"; and begin
         echo "jj_agent: missing workspace name" >&2
-        echo 'Usage: jj_agent <workspace-name> [-r <revset>] [-e <editor>]' >&2
+        echo 'Usage: jj_agent <workspace-name> [-r <revset>] [-e <editor>] [--tmux]' >&2
         return 2
     end
 
@@ -43,6 +46,19 @@ function jj_agent --description 'Create a jj workspace for a parallel coding-age
 
     jj workspace add --name $name -r $revset $path
     or return $status
+
+    if set -q _flag_tmux
+        if not set -q TMUX
+            echo "jj_agent: --tmux requires running inside a tmux session" >&2
+            return 1
+        end
+        if not type -q tmux
+            echo "jj_agent: tmux is not installed" >&2
+            return 127
+        end
+        tmux new-window -c $path -n "jj:$name"
+        return 0
+    end
 
     set -l editor (set -q _flag_editor; and echo $_flag_editor; or echo $EDITOR)
     if test -n "$editor"
