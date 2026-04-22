@@ -42,8 +42,10 @@ Inherits global routing from `~/.claude/CLAUDE.md`. No project-specific override
 @.claude/rules/abbreviations.md
 @.claude/rules/pickers.md
 @.claude/rules/testing.md
+@.claude/rules/jj-workflow.md
 
-## Skills (user-invoked)
+## Skills and sub-agents
 
-- `/add-abbreviation` — add a new `j`-prefixed abbr with the required 4-places update
-- `/add-picker` — scaffold a new `jj_fzf_*` picker and wire it into `jj_configure_bindings`
+Plugin editing (this repo): `/add-abbreviation` (add an abbr across its 4 required sites) · `/add-picker` (scaffold a `jj_fzf_*` picker).
+Jj workflow (portable to any jj repo): `/jj-commit-cycle` (`jj describe -m` + `jj new` — replaces the `git commit` reflex) · `/jj-agent-spawn` (start a parallel session via `jj_agent`).
+Delegable: `jj-reviewer` — read-only audit of changes, stacks, and op log.
