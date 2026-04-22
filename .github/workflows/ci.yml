@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install fish
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fish
+      - name: fish_indent --check
+        run: |
+          set -e
+          for f in $(find conf.d functions tests -name '*.fish' -o -name '*.test.fish'); do
+            fish -c "fish_indent --check '$f'" || { echo "::error file=$f::fish_indent would modify this file"; exit 1; }
+          done
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install fish and fisher
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fish curl
+          fish -c 'curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher'
+      - name: Install fishtape
+        run: fish -c 'fisher install jorgebucaran/fishtape'
+      - name: Run fishtape
+        run: fish -c 'fishtape tests/*.test.fish'
