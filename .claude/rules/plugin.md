@@ -23,6 +23,7 @@ description: Plugin-level invariants — no completions, non-destructive default
 - `$jujutsu_agent_root` defaults to the parent of the main workspace root. Write code that assumes users will override it.
 - `--tmux` **requires an existing `$TMUX` session**. Do not spawn a tmux session — that would take over the user's session layout.
 - `jj_agent_list` consumes `jj workspace list -T '<template>'` with `\t`-delimited columns, then pads with `printf '%-20s ...'`. Do not depend on the external `column` binary. If you add a column, update **both** the template and the `printf` format string.
+- The **"Coming from `git worktree`?" section in README.md is the canonical onboarding surface**. When you change the semantics of `jj_agent`, `jj_agent_list`, `jj_agent_done`, `jj_agent_prune`, `jj_agent_diff`, or `jj_fzf_workspace`, walk through that mapping table and keep the equivalences and caveats accurate. See [LESSONS.md § jj workspace ≈ git worktree](../../LESSONS.md) for the reasoning.
 
 ## Competitor adoption (learned from 2026-04 gap analysis)
 

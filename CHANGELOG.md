@@ -5,6 +5,12 @@ Versioning is semver; pre-1.0 releases may break.
 
 ## [Unreleased]
 
+### Documentation
+
+- README: new "Coming from `git worktree`?" section with a subcommand mapping table (git worktree → jj workspace → this plugin) plus caveats (colocated-repo extras are not git worktrees; `jj workspace update-stale` for cross-workspace resync).
+- LESSONS.md: record the same orientation under "jj authoring" so changes to the agent-workspace helpers keep the README mapping honest.
+- `.claude/rules/plugin.md`: flag the README orientation section as the canonical onboarding surface for worktree-background users.
+
 ## [0.0.1] - 2026-04-22
 
 Initial release. Parallel coding-agent jj workflow in fish, with curated

@@ -208,6 +208,34 @@ an unrelated batch of abbr additions a session later. Recovery used
 `jj split -- <paths>` (see below) but it is cheaper to not let the
 mess happen.
 
+### `jj workspace` is the `git worktree` equivalent, but not a subset
+
+Reviewers and cold readers often ask "why do I need this plugin if I
+can just use `git worktree`?". The one-paragraph answer — now mirrored
+in `README.md` under "Coming from `git worktree`?" — is that
+`jj workspace` covers every git-worktree use case **and** adds:
+
+- `<name>@` as a first-class revset (no `git -C <path>` dance).
+- Shared op log: `jj op undo` / `op restore` from any workspace
+  reaches every workspace.
+- `jj workspace forget` is non-destructive — the change itself stays,
+  only the workspace entry goes away.
+- Adding a workspace is a working-copy link, not a fresh clone.
+
+Two caveats worth preserving:
+
+- **Colocated repos**: the main workspace is a real git repo; extra
+  jj workspaces are **not** git worktrees. Git tooling only sees the
+  primary.
+- **Stale working copy**: if another workspace's operation rewrote
+  your `@` while you were away, re-entering that workspace needs
+  `jj workspace update-stale` to resync.
+
+When changing `jj_agent` / `jj_fzf_workspace` / `jj_agent_list` /
+`jj_agent_done` / `jj_agent_prune` / `jj_agent_diff` behavior, keep
+the README mapping table honest — that is the canonical onboarding
+surface.
+
 ### `jj split` takes paths after `--`, not `--paths`
 
 The flag-style attempt (`jj split --paths a --paths b`) fails with
