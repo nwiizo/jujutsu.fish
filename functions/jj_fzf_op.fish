@@ -1,10 +1,10 @@
 function jj_fzf_op --description 'Pick an operation from `jj op log` via fzf and insert its id at the cursor'
     type -q jj; or begin
-        echo "jj_fzf_op: jj is not installed" >&2
+        __jujutsu_fish_err 'jj is not installed'
         return 127
     end
     type -q fzf; or begin
-        echo "jj_fzf_op: fzf is not installed" >&2
+        __jujutsu_fish_err 'fzf is not installed'
         return 127
     end
 

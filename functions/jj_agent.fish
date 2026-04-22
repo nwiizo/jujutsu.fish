@@ -9,14 +9,16 @@ function jj_agent --description 'Create a jj workspace for a parallel coding-age
     # the path for manual cd).
     #
     # With --tmux, opens the workspace in a new tmux window inside the
-    # current session instead of in $editor. Requires $TMUX to be set.
+    # current session instead of in $editor. When both --tmux and
+    # --editor are passed, --tmux wins (you can always run $editor inside
+    # the new tmux window).
     #
     # Intended for coding-agent workflows where each agent session lives in
     # its own working copy. Non-destructive: it never rewrites existing
     # commits or workspaces — it only adds new ones.
 
     type -q jj; or begin
-        echo "jj_agent: jj is not installed" >&2
+        __jujutsu_fish_err 'jj is not installed'
         return 127
     end
 
@@ -30,9 +32,22 @@ function jj_agent --description 'Create a jj workspace for a parallel coding-age
 
     set -l name $argv[1]
     test -z "$name"; and begin
-        echo "jj_agent: missing workspace name" >&2
+        __jujutsu_fish_err 'missing workspace name'
         echo 'Usage: jj_agent <workspace-name> [-r <revset>] [-e <editor>] [--tmux]' >&2
         return 2
+    end
+
+    # Pre-flight tmux check — do this BEFORE creating the workspace so we
+    # do not leave a dangling workspace on the filesystem on failure.
+    if set -q _flag_tmux
+        if not set -q TMUX
+            __jujutsu_fish_err '--tmux requires running inside a tmux session'
+            return 1
+        end
+        if not type -q tmux
+            __jujutsu_fish_err 'tmux is not installed'
+            return 127
+        end
     end
 
     set -l revset (set -q _flag_revset; and echo $_flag_revset; or echo '@')
@@ -40,7 +55,7 @@ function jj_agent --description 'Create a jj workspace for a parallel coding-age
     set -l path $jujutsu_agent_root/$name
 
     if test -e $path
-        echo "jj_agent: path already exists: $path" >&2
+        __jujutsu_fish_err "path already exists: $path"
         return 1
     end
 
@@ -48,22 +63,18 @@ function jj_agent --description 'Create a jj workspace for a parallel coding-age
     or return $status
 
     if set -q _flag_tmux
-        if not set -q TMUX
-            echo "jj_agent: --tmux requires running inside a tmux session" >&2
-            return 1
-        end
-        if not type -q tmux
-            echo "jj_agent: tmux is not installed" >&2
-            return 127
-        end
         tmux new-window -c $path -n "jj:$name"
         return 0
     end
 
+    # $editor may contain flags (e.g. "code --wait"). Split into tokens and
+    # invoke directly instead of through eval so $path can contain shell
+    # metacharacters safely.
     set -l editor (set -q _flag_editor; and echo $_flag_editor; or echo $EDITOR)
     if test -n "$editor"
+        set -l editor_tokens (string split ' ' -- $editor)
         pushd $path >/dev/null
-        eval $editor .
+        $editor_tokens .
         popd >/dev/null
     else
         echo "jj_agent: workspace ready at $path (no \$EDITOR set; cd manually)"

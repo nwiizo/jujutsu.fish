@@ -147,6 +147,18 @@ jj_agent_list
 # refactor-db           ttmnorqs    dirty   codex pass 2
 ```
 
+## Development
+
+Tests use [fishtape](https://github.com/jorgebucaran/fishtape) with
+BDD-style names (`Given ... When ... Then ...`). Fish does not have a
+widely-used native BDD framework, so this repo keeps the style in test
+descriptions and shared mocks in `tests/test_helper.fish`.
+
+```fish
+fishtape tests/*.test.fish
+fish_indent -w conf.d/*.fish functions/*.fish tests/*.fish
+```
+
 ## Future ideas (not in v0.1)
 
 - `jj_agent_prune` — detect workspaces whose change is merged or abandoned

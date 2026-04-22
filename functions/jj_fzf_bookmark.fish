@@ -1,10 +1,10 @@
 function jj_fzf_bookmark --description 'Pick a bookmark via fzf and insert its name at the cursor'
     type -q jj; or begin
-        echo "jj_fzf_bookmark: jj is not installed" >&2
+        __jujutsu_fish_err 'jj is not installed'
         return 127
     end
     type -q fzf; or begin
-        echo "jj_fzf_bookmark: fzf is not installed" >&2
+        __jujutsu_fish_err 'fzf is not installed'
         return 127
     end
 

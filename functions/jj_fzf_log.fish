@@ -1,10 +1,10 @@
 function jj_fzf_log --description 'Pick a revision from `jj log` via fzf and insert its change-id at the cursor'
     type -q jj; or begin
-        echo "jj_fzf_log: jj is not installed" >&2
+        __jujutsu_fish_err 'jj is not installed'
         return 127
     end
     type -q fzf; or begin
-        echo "jj_fzf_log: fzf is not installed" >&2
+        __jujutsu_fish_err 'fzf is not installed'
         return 127
     end
 

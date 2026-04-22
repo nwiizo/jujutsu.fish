@@ -1,10 +1,10 @@
 function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into its path'
     type -q jj; or begin
-        echo "jj_fzf_workspace: jj is not installed" >&2
+        __jujutsu_fish_err 'jj is not installed'
         return 127
     end
     type -q fzf; or begin
-        echo "jj_fzf_workspace: fzf is not installed" >&2
+        __jujutsu_fish_err 'fzf is not installed'
         return 127
     end
 
@@ -19,7 +19,7 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
         set -a names (string split -m1 ':' -- $line)[1]
     end
     test (count $names) -eq 0; and begin
-        echo "jj_fzf_workspace: no workspaces found" >&2
+        __jujutsu_fish_err 'no workspaces found'
         return 1
     end
 
@@ -30,7 +30,7 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
         set -a rows "$name"\t"$path"
     end
     test (count $rows) -eq 0; and begin
-        echo "jj_fzf_workspace: could not resolve any workspace paths" >&2
+        __jujutsu_fish_err 'could not resolve any workspace paths'
         return 1
     end
 
@@ -44,7 +44,7 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
 
     set -l path (string split -f2 \t -- $selection)
     test -d "$path"; or begin
-        echo "jj_fzf_workspace: workspace path does not exist: $path" >&2
+        __jujutsu_fish_err "workspace path does not exist: $path"
         return 1
     end
 
