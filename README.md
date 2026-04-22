@@ -48,16 +48,21 @@ Caveats worth knowing:
 | Close out an agent workspace — summarize, push PR, forget | `jj_agent_done <name>` |
 | Clean up empty / abandoned agent workspaces | `jj_agent_prune [--dry-run]` |
 | Compare two agents' output side by side | `jj_agent_diff <nameA> <nameB>` |
+| Push a change and open a GitHub PR from the generated bookmark | `jj_push_pr` |
 
 ## Why another jj plugin?
 
 - **Single-letter prefix** (`j`) — shortest keystrokes for the commands you
   actually type all day. ~30 curated abbreviations, not 70+ kitchen-sink
   ones.
-- **fzf pickers** for `log`, `bookmark`, `op log`, and `workspace`. Fuzzy
-  select, live preview via `jj show` / `jj log`.
-- **`jj_agent`** helper: create a workspace for a parallel agent session
-  and open it in `$EDITOR` with one command.
+- **fzf pickers** for log, bookmark, op log, workspace, changed-file, and
+  squash target. Fuzzy select, live preview via `jj show` / `jj log` /
+  `jj status`.
+- **Full agent workspace lifecycle** — `jj_agent` to spin up,
+  `jj_agent_list` to see what's running, `jj_agent_diff` to compare,
+  `jj_agent_done` to close out, `jj_agent_prune` to reclaim.
+- **Push → PR in one step** — `jj_push_pr` chains `jj git push --change`
+  with `gh pr create`, forwarding any `gh` flags after `--`.
 - **No duplicate completions.** jj 0.24+ ships dynamic completions and
   fish 4.0.2+ auto-loads them. This plugin deliberately stays out of
   the way.
@@ -67,6 +72,8 @@ Caveats worth knowing:
 - fish `>= 3.6`
 - jj `>= 0.24` (dynamic completions, workspace improvements)
 - fzf (optional — only needed for the picker functions)
+- gh (optional — only needed for `jj_push_pr`)
+- tmux (optional — only needed for `jj_agent --tmux`)
 
 ## Install
 
@@ -140,10 +147,16 @@ function fish_user_key_bindings
             --log=\cj \
             --bookmark=\ck \
             --op= \
-            --workspace=\cy
+            --workspace=\cy \
+            --status=\cu \
+            --squash=\cs
     end
 end
 ```
+
+Every flag is optional; pass `--<name>=` with an empty value to leave it
+unbound. Unpassed flags do not bind anything — they never overwrite an
+existing binding.
 
 Available pickers:
 
@@ -166,34 +179,53 @@ jj_push_pr -- --draft --title 'wire auth'       # forward args to gh pr create
 helper scans the push output for that name and hands it to
 `gh pr create --head <bookmark>`.
 
-### Agent workspace helper
+### Agent workspace lifecycle
+
+The full lifecycle is five functions, each doing one thing:
 
 ```fish
-# Create a workspace at ../feature-x based on @ and open it in $EDITOR
-jj_agent feature-x
+jj_agent <name> [-r <rev>] [-e <editor>] [--tmux]
+#   Create a new jj workspace rooted at <rev> (default: @), then open
+#   it in $EDITOR or a new tmux window. Sets the tab title to
+#   jj:<name> via OSC 0.
 
-# Base at a specific revset
-jj_agent fix-login -r 'trunk()'
+jj_agent_list
+#   Tabular dirty/clean view of every workspace. Dirty is yellow,
+#   clean is green; the NAME column auto-sizes.
 
-# Open with a different editor / command
-jj_agent refactor -e 'claude'
+jj_agent_diff <nameA> <nameB>
+#   jj diff --from <A>@ --to <B>@. For comparing two agents on the
+#   same task.
+
+jj_agent_done <name> [--push-pr] [--forget]
+#   Summarize the workspace's @ (change-id + description + diff
+#   --stat). Interactive: asks to push PR, asks to forget. Flags
+#   skip the prompts.
+
+jj_agent_prune [--dry-run]
+#   Forget non-default workspaces whose @ is empty. Conservative:
+#   default is never touched; each candidate gets its own y/N.
+```
+
+Creation examples:
+
+```fish
+jj_agent feature-x                     # @-based, opens $EDITOR
+jj_agent fix-login -r 'trunk()'        # base at trunk
+jj_agent refactor -e 'claude'          # override editor
+jj_agent pair-coder --tmux             # open in a new tmux window
 ```
 
 `$jujutsu_agent_root` controls where workspaces are placed (defaults to
 the parent of your main workspace).
 
-Creating (or switching to) a workspace updates the terminal tab title to
-`jj:<name>` via OSC 0, so a row of parallel Ghostty / iTerm2 / WezTerm
-tabs stays readable at a glance. Runs silently when stdout is piped.
+`jj_agent_list` sample output:
 
-Inspect running agent workspaces at a glance:
-
-```fish
-jj_agent_list
-# NAME                  CHANGE      STATE   DESCRIPTION
-# default               qqwkkopr    clean   wire auth
-# fix-login             xpmzzqor    dirty   WIP: claude-code session
-# refactor-db           ttmnorqs    dirty   codex pass 2
+```
+NAME                  CHANGE      STATE   DESCRIPTION
+default               qqwkkopr    clean   wire auth
+fix-login             xpmzzqor    dirty   WIP: claude-code session
+refactor-db           ttmnorqs    dirty   codex pass 2
 ```
 
 ### End-to-end agent loop
@@ -227,12 +259,16 @@ fishtape tests/*.test.fish
 fish_indent -w conf.d/*.fish functions/*.fish tests/*.fish
 ```
 
-## Future ideas (not in v0.1)
+## Future ideas
 
-- `jj_agent_prune` — detect workspaces whose change is merged or abandoned
-  and remove them with confirmation.
 - `JUJUTSU_FISH_CONFIRM=1` — opt-in wrappers around `jj abandon` and
   `jj op restore` that prompt before acting.
+- `jj_agent --seed <dir>` — pre-seed a new workspace with context files
+  (CLAUDE.md, task briefs, etc.) so agents can start without manual
+  copy-paste.
+- `jj_agent_handoff <from> <to>` — shortcut for
+  `jj workspace add --name <to> -r <from>@`, for chained multi-agent
+  sessions.
 
 Filing issues / PRs welcome.
 
