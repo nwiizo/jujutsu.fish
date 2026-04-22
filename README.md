@@ -21,6 +21,9 @@ friction-free as `git worktree` was with `workspace.fish`.
 | Review the files an agent just changed and open one | `jj_fzf_status` |
 | Squash the current change into a chosen revision | `jj_squash_into` |
 | Spin up a new parallel agent session, in $EDITOR or tmux | `jj_agent <name>` / `jj_agent <name> --tmux` |
+| Close out an agent workspace — summarize, push PR, forget | `jj_agent_done <name>` |
+| Clean up empty / abandoned agent workspaces | `jj_agent_prune [--dry-run]` |
+| Compare two agents' output side by side | `jj_agent_diff <nameA> <nameB>` |
 
 ## Why another jj plugin?
 
@@ -167,6 +170,25 @@ jj_agent_list
 # default               qqwkkopr    clean   wire auth
 # fix-login             xpmzzqor    dirty   WIP: claude-code session
 # refactor-db           ttmnorqs    dirty   codex pass 2
+```
+
+### End-to-end agent loop
+
+```fish
+# 1. Spin up a workspace for a new agent task
+jj_agent fix-login -r 'trunk()'
+
+# 2. (…agent runs, jj records changes into fix-login@…)
+
+# 3. Compare two agents' work on the same task
+jj_agent_diff fix-login fix-login-alt
+
+# 4. Close out the winning workspace — summary, push PR, forget
+jj_agent_done fix-login --push-pr --forget
+
+# 5. Reclaim stale workspaces
+jj_agent_prune --dry-run
+jj_agent_prune          # prompts y/N per candidate
 ```
 
 ## Development
