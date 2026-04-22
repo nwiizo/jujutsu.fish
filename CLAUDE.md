@@ -10,7 +10,7 @@ A fish-shell plugin for [Jujutsu (jj)](https://github.com/jj-vcs/jj). Three conc
 2. fzf pickers for `log` / `bookmark` / `op` / `workspace` / `status`
 3. `jj_agent` / `jj_agent_list` — helpers for parallel coding-agent sessions in separate jj workspaces
 
-Completions are deliberately not shipped — jj 0.24+ provides dynamic completions that fish 4.0.2+ auto-loads. See `README.md` for user-facing docs and `LESSONS.md` for v0.1 review findings (read before touching external-command invocations or jj templates).
+Completions are deliberately not shipped — jj 0.24+ provides dynamic completions that fish 4.0.2+ auto-loads. See `README.md` for user-facing docs and `LESSONS.md` for accumulated review findings (eval injection, fzf preview shell mismatch, abbr universal-var persistence, terminal integration, competitor-adoption discipline, jj authoring pitfalls). Read before touching external-command invocations, jj templates, or before importing a feature from another plugin.
 
 ## Stack
 

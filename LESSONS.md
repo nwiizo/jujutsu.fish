@@ -160,6 +160,69 @@ so every validation happens before the first state-changing command.
 - Always gate on `isatty stdout` — fishtape's command substitution is non-tty, so a well-written helper silently no-ops in tests without any mocking.
 - Ghostty's shell integration already handles OSC 7 (cwd) and OSC 133 (prompt marks). The plugin must not re-emit these.
 
+## Competitor adoption discipline
+
+A 2026-04 gap analysis (four competing plugins, manually cross-checked
+by an independent reviewer) shortlisted ~15 candidate features. Only
+three families made it in:
+
+- **jj primitives that cover daily stack operations** — `jnx` / `jpv`
+  (`jj next` / `jj prev`) and `jgr` / `jgra` / `jgrl`
+  (`jj git remote` family).
+- **Composite workflow matching the plugin's thesis** — `jgpc`
+  (`jj git push --change @`) plus `jj_push_pr`, which chains
+  `jj git push -c` and `gh pr create`.
+
+The rejects, with reasons preserved so they do not come back round the
+loop:
+
+- `jj_ai_describe` — Claude Code / Codex already write commit messages;
+  duplicating adds surface area without new value.
+- `jj_fzf_interdiff` — two chained revision pickers feel clever in
+  isolation but confuse fish readline bindings and are rarely needed.
+- AI spinner / tool auto-detect UIs — fragile under tmux and non-tty
+  agent runs; `$JJ_AI_TOOL` pinning is the only shape worth shipping.
+- `jjrt` = `cd (jj root)` — one keystroke saved, outside the thesis.
+- `jj bisect` / `jj fix` / `jj arrange` / `jj parallelize` abbreviations —
+  rare operations that would push the abbr list past its ~30 ceiling.
+
+Rule of thumb: **new competitor features need positive evidence that
+they serve parallel-agent workflows, not merely "HotThoughts has it".**
+
+## jj authoring
+
+### The working copy keeps absorbing edits until `jj new`
+
+In a colocated jj+git repo, the working copy change (`@`) is mutated
+every time a file changes. If you `jj describe -m "feat: A"` and then
+keep editing files, those new edits land in the "feat: A" change —
+*not* a new one. The fix is to start a fresh change **before** the new
+work begins:
+
+```fish
+jj new -m 'next topic'
+```
+
+Symptom I hit: a describe called "OSC 0 title sync" ended up carrying
+an unrelated batch of abbr additions a session later. Recovery used
+`jj split -- <paths>` (see below) but it is cheaper to not let the
+mess happen.
+
+### `jj split` takes paths after `--`, not `--paths`
+
+The flag-style attempt (`jj split --paths a --paths b`) fails with
+"use '-- --paths' to pass". The correct shape is positional
+filesets after `--`:
+
+```fish
+jj split -m '<new change message>' -- path1 path2 path3
+```
+
+After the split, the specified paths become a **new change placed as
+parent of the original `@`**, and the remaining diff stays on `@`. The
+resulting order may feel inverted — annotate the change descriptions
+so future readers can follow the narrative regardless.
+
 ## Process
 
 - **Trust but verify every agent suggestion.** Codex correctly flagged

@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-`conf.d/jujutsu.fish` is the plugin entry point and owns abbreviation registration plus uninstall cleanup. Autoloaded commands live in `functions/*.fish`; keep one public function per file and match the filename to the function name, for example `functions/jj_agent.fish`. Tests live in `tests/*.test.fish` and currently use `fishtape`. CI is defined in `.github/workflows/ci.yml`. `README.md` is the user-facing contract, so update it when behavior or command surface changes. `LESSONS.md` records traps from prior review rounds — consult it before touching `eval`, fzf previews, `conf.d` side-effects, abbr lifecycle, or jj templates.
+`conf.d/jujutsu.fish` is the plugin entry point and owns abbreviation registration plus uninstall cleanup. Autoloaded commands live in `functions/*.fish`; keep one public function per file and match the filename to the function name, for example `functions/jj_agent.fish`. Tests live in `tests/*.test.fish` and currently use `fishtape`. CI is defined in `.github/workflows/ci.yml`. `README.md` is the user-facing contract, so update it when behavior or command surface changes. `LESSONS.md` records traps from prior review rounds — consult it before touching `eval`, fzf previews, `conf.d` side-effects, abbr lifecycle, jj templates, terminal-integration escapes, competitor-feature adoption, or jj history hygiene (`jj describe` vs `jj new`, `jj split -- <paths>`).
 
 ## Build, Test, and Development Commands
 There is no build step; this is a Fish plugin.
