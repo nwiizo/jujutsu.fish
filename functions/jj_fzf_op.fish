@@ -15,7 +15,7 @@ function jj_fzf_op --description 'Pick an operation from `jj op log` via fzf and
         | fzf --ansi --no-sort \
               --prompt='jj op > ' \
               --delimiter='\t' --with-nth=2,3 \
-              --preview='jj op show --color=always {1}' \
+              --preview='jj op show --color=always --ignore-working-copy {1}' \
               --preview-window='right:60%:wrap' \
     )
 
