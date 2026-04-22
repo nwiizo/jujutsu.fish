@@ -8,6 +8,30 @@ Designed for people who already run a coding agent (Claude Code, Codex,
 Aider) in parallel sessions and want jj's workspace model to be as
 friction-free as `git worktree` was with `workspace.fish`.
 
+## Coming from `git worktree`?
+
+jj's native answer is `jj workspace`, and this plugin is the fish layer
+on top of it. Direct equivalents:
+
+| `git worktree …`      | `jj workspace …`                                | This plugin                      |
+|-----------------------|-------------------------------------------------|----------------------------------|
+| `add <path> <branch>` | `add --name <n> -r <rev> <path>`                | `jj_agent <name>` / `jwa`        |
+| `list`                | `list`                                          | `jj_agent_list` / `jwl`          |
+| `remove <path>`       | `forget <name>`                                 | `jj_agent_done --forget` / `jwf` |
+| (shell in a worktree) | (`<name>@` revset, `-R <path>`)                 | `jj_fzf_workspace`               |
+
+What jj workspace gives you on top of `git worktree`:
+
+- **Revset first-class**: `feature-x@` refers to that workspace's `@` anywhere in jj — no `git -C <path>` dance.
+- **Shared op log**: `jj op undo` / `jj op restore` reaches every workspace, so recovery is repo-wide.
+- **Non-destructive forget**: `jj workspace forget` only detaches the workspace entry; the change itself stays in the graph (use `jj abandon` if you want the change gone too).
+- **Lightweight**: adding a workspace is one working-copy link, not a separate clone.
+
+Caveats worth knowing:
+
+- In a colocated repo, **extra jj workspaces are not git worktrees**. Only the main workspace is visible to git tooling.
+- If another workspace's operation rewrote your `@`, re-enter and `jj workspace update-stale` to resync.
+
 ## Jobs this plugin hires itself to do
 
 | When I want to… | Use |
