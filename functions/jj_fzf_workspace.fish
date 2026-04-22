@@ -34,14 +34,20 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
         return 1
     end
 
+    # Preview shows `jj status` for the selected workspace. `jj -R <path>`
+    # avoids a `cd` so this works under fzf's $SHELL (which may be bash or
+    # zsh on a macOS default) without any fish-specific syntax.
     set -l selection (
         printf '%s\n' $rows \
-        | fzf --no-sort \
+        | fzf --ansi --no-sort \
               --prompt='jj workspace > ' \
-              --delimiter='\t' \
+              --delimiter='\t' --with-nth=1 \
+              --preview='jj --color=always -R {2} status 2>&1 | head -30' \
+              --preview-window='right:55%:wrap'
     )
     test -z "$selection"; and return 130
 
+    set -l name (string split -f1 \t -- $selection)
     set -l path (string split -f2 \t -- $selection)
     test -d "$path"; or begin
         __jujutsu_fish_err "workspace path does not exist: $path"
@@ -49,5 +55,6 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
     end
 
     cd -- $path
+    __jujutsu_fish_set_title "jj:$name"
     commandline -f repaint
 end

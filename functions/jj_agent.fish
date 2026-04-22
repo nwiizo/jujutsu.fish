@@ -62,6 +62,11 @@ function jj_agent --description 'Create a jj workspace for a parallel coding-age
     jj workspace add --name $name -r $revset $path
     or return $status
 
+    # Hint the terminal that the current shell is now associated with this
+    # agent workspace. OSC 0 is honored by Ghostty/iTerm2/WezTerm/Kitty and
+    # by tmux when `set-titles on`, so a sea of parallel tabs stays legible.
+    __jujutsu_fish_set_title "jj:$name"
+
     if set -q _flag_tmux
         tmux new-window -c $path -n "jj:$name"
         return 0

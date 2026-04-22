@@ -66,6 +66,8 @@ it.
 | `jds` | `jj describe`        |
 | `jn`  | `jj new`             |
 | `jed` | `jj edit`            |
+| `jnx` | `jj next`            |
+| `jpv` | `jj prev`            |
 | `jl`  | `jj log`             |
 | `jla` | `jj log -r "all()"`  |
 | `jlo` | `jj log --no-graph`  |
@@ -88,7 +90,11 @@ it.
 | `jgf` | `jj git fetch`       |
 | `jgp` | `jj git push`        |
 | `jgpa`| `jj git push --allow-new` |
+| `jgpc`| `jj git push --change @` |
 | `jgc` | `jj git clone`       |
+| `jgr` | `jj git remote`      |
+| `jgra`| `jj git remote add`  |
+| `jgrl`| `jj git remote list` |
 | `jw`  | `jj workspace`       |
 | `jwl` | `jj workspace list`  |
 | `jwa` | `jj workspace add`   |
@@ -121,6 +127,18 @@ Available pickers:
 - `jj_fzf_status` — select a changed file in the working copy and open it in `$EDITOR`
 - `jj_squash_into` — select a target revision and squash `@` into it (with confirm)
 
+### Push and PR
+
+```fish
+jj_push_pr                                      # push @ and open PR via gh
+jj_push_pr -r qpvuntsm                          # push a specific change
+jj_push_pr -- --draft --title 'wire auth'       # forward args to gh pr create
+```
+
+`jj git push --change` creates a fresh `push-<change-id>` bookmark; this
+helper scans the push output for that name and hands it to
+`gh pr create --head <bookmark>`.
+
 ### Agent workspace helper
 
 ```fish
@@ -136,6 +154,10 @@ jj_agent refactor -e 'claude'
 
 `$jujutsu_agent_root` controls where workspaces are placed (defaults to
 the parent of your main workspace).
+
+Creating (or switching to) a workspace updates the terminal tab title to
+`jj:<name>` via OSC 0, so a row of parallel Ghostty / iTerm2 / WezTerm
+tabs stays readable at a glance. Runs silently when stdout is piped.
 
 Inspect running agent workspaces at a glance:
 

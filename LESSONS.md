@@ -143,6 +143,23 @@ If the user was not inside tmux the workspace was already on disk and
 the next invocation failed with "path already exists". Always reorder
 so every validation happens before the first state-changing command.
 
+## Terminal integration
+
+### Ghostty has no IPC to control a running instance (v1.3.2, 2026-04)
+
+- `ghostty +new-window` — exits 1 with `"not supported on this platform"` on macOS.
+- No `GHOSTTY_IPC_SOCKET` env var, no UDS under `/tmp`/`$TMPDIR`/`~/Library`, no XPC service in the app bundle.
+- Consequence: a `jj_agent --ghostty` that opens a new tab in the current Ghostty window is **not possible today**. The workable fallback is `open -a Ghostty.app --args --working-directory=<path>` which opens a new **window** (not tab). Gate it on `$TERM_PROGRAM = ghostty` and `uname = Darwin`.
+- Detection is reliable: `$TERM_PROGRAM`, `$GHOSTTY`, `$GHOSTTY_SHELL_FEATURES`, `$GHOSTTY_SURFACE_ID` are all set.
+- OSC 9 desktop notifications are **not implemented** by Ghostty yet. Emitting OSC 9 is a silent no-op; `osascript` is the macOS fallback.
+
+### Terminal title (OSC 0) is the cheapest UX win
+
+- `printf '\e]0;%s\a' $title` is honored by Ghostty, iTerm2, WezTerm, Alacritty, Kitty, and tmux (with `set-titles on`).
+- Cost: ~4 lines of fish. Value: N parallel agent tabs stay legible.
+- Always gate on `isatty stdout` — fishtape's command substitution is non-tty, so a well-written helper silently no-ops in tests without any mocking.
+- Ghostty's shell integration already handles OSC 7 (cwd) and OSC 133 (prompt marks). The plugin must not re-emit these.
+
 ## Process
 
 - **Trust but verify every agent suggestion.** Codex correctly flagged
