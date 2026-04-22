@@ -194,3 +194,90 @@ function __test_given_rejection_when_jj_squash_into_runs_then_it_returns_130
 end
 
 @test "Given rejection When jj_squash_into runs Then it returns 130" (__test_given_rejection_when_jj_squash_into_runs_then_it_returns_130) $status -eq 0
+
+# fzf-cancel → 130. These guard the `test -z "$selection"; and return 130`
+# branch in every picker — a refactor that drops the check would go
+# unnoticed without this coverage.
+
+function __test_given_fzf_cancel_when_jj_fzf_log_runs_then_it_returns_130
+    __jt_reset
+    function jj
+        printf 'qpvuntsm\t12345678\tship it\n'
+    end
+    function fzf
+        return 1
+    end
+    jj_fzf_log >/dev/null 2>/dev/null
+    test $status -eq 130
+end
+
+@test "Given fzf cancel When jj_fzf_log runs Then it returns 130" (__test_given_fzf_cancel_when_jj_fzf_log_runs_then_it_returns_130) $status -eq 0
+
+function __test_given_fzf_cancel_when_jj_fzf_bookmark_runs_then_it_returns_130
+    __jt_reset
+    function jj
+        printf 'main\t12345678\ttrunk head\n'
+    end
+    function fzf
+        return 1
+    end
+    jj_fzf_bookmark >/dev/null 2>/dev/null
+    test $status -eq 130
+end
+
+@test "Given fzf cancel When jj_fzf_bookmark runs Then it returns 130" (__test_given_fzf_cancel_when_jj_fzf_bookmark_runs_then_it_returns_130) $status -eq 0
+
+function __test_given_fzf_cancel_when_jj_fzf_op_runs_then_it_returns_130
+    __jt_reset
+    function jj
+        printf 'op1234567890\t2026-04-22\tundo marker\n'
+    end
+    function fzf
+        return 1
+    end
+    jj_fzf_op >/dev/null 2>/dev/null
+    test $status -eq 130
+end
+
+@test "Given fzf cancel When jj_fzf_op runs Then it returns 130" (__test_given_fzf_cancel_when_jj_fzf_op_runs_then_it_returns_130) $status -eq 0
+
+function __test_given_fzf_cancel_when_jj_fzf_status_runs_then_it_returns_130
+    __jt_reset
+    function jj
+        printf 'M path/to/file\n'
+    end
+    function fzf
+        return 1
+    end
+    jj_fzf_status >/dev/null 2>/dev/null
+    test $status -eq 130
+end
+
+@test "Given fzf cancel When jj_fzf_status runs Then it returns 130" (__test_given_fzf_cancel_when_jj_fzf_status_runs_then_it_returns_130) $status -eq 0
+
+function __test_given_fzf_cancel_when_jj_fzf_workspace_runs_then_it_returns_130
+    __jt_reset
+    set -l root (mktemp -d)
+    mkdir -p $root/default
+    set -g __jt_root $root
+    function jj
+        switch "$argv[1] $argv[2]"
+            case 'workspace list'
+                printf 'default: qpvuntsm wire auth\n'
+            case 'workspace root'
+                printf '%s/default\n' $__jt_root
+            case '*'
+                return 1
+        end
+    end
+    function fzf
+        return 1
+    end
+    jj_fzf_workspace >/dev/null 2>/dev/null
+    set -l status_code $status
+    rm -rf $root
+    set -e __jt_root
+    test $status_code -eq 130
+end
+
+@test "Given fzf cancel When jj_fzf_workspace runs Then it returns 130" (__test_given_fzf_cancel_when_jj_fzf_workspace_runs_then_it_returns_130) $status -eq 0
