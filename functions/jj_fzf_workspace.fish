@@ -10,10 +10,9 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
 
     # `jj workspace list` prints "<name>: <change-id> <description>" — not
     # directly a path. We enumerate workspaces, then resolve each one's
-    # working-copy path via `jj workspace root --at-workspace`.
-    #
-    # Fall back to the naive parser if `root --at-workspace` is unsupported
-    # in the running jj version.
+    # working-copy path via `jj workspace root --name <name>`. Workspaces
+    # whose path cannot be resolved are skipped rather than shown in the
+    # picker so the user cannot select a broken entry.
 
     set -l names
     for line in (jj workspace list 2>/dev/null)
@@ -26,9 +25,13 @@ function jj_fzf_workspace --description 'Pick a workspace via fzf and cd into it
 
     set -l rows
     for name in $names
-        set -l path (jj workspace root --at-workspace $name 2>/dev/null)
-        or set path '(path unknown)'
+        set -l path (jj workspace root --name $name 2>/dev/null)
+        or continue
         set -a rows "$name"\t"$path"
+    end
+    test (count $rows) -eq 0; and begin
+        echo "jj_fzf_workspace: could not resolve any workspace paths" >&2
+        return 1
     end
 
     set -l selection (

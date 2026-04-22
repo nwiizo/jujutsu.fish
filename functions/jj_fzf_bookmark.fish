@@ -11,10 +11,17 @@ function jj_fzf_bookmark --description 'Pick a bookmark via fzf and insert its n
     # `jj bookmark list -T` lets us format each bookmark on a single line
     # regardless of how many remotes it tracks. Keep the template minimal:
     # <name>\t<target commit short id>\t<description first line>
+    #
+    # Guard against bookmarks whose normal_target is absent (e.g. a
+    # tracked-remote bookmark for a deleted local one) so the picker does
+    # not blow up on templater null access.
     set -l template '
-        name ++ "\t" ++
-        normal_target.commit_id().shortest(8) ++ "\t" ++
-        normal_target.description().first_line() ++ "\n"
+        if(normal_target,
+            name ++ "\t" ++
+            normal_target.commit_id().shortest(8) ++ "\t" ++
+            normal_target.description().first_line() ++ "\n",
+            ""
+        )
     '
 
     set -l selection (

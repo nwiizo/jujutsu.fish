@@ -1,7 +1,7 @@
 # jujutsu.fish
 
-A mature [Jujutsu (jj)](https://github.com/jj-vcs/jj) plugin for the
-[fish shell](https://fishshell.com/), focused on **fast abbreviations**,
+A focused [Jujutsu (jj)](https://github.com/jj-vcs/jj) plugin for the
+[fish shell](https://fishshell.com/), built around **fast abbreviations**,
 **fzf-powered pickers**, and **coding-agent workspace workflows**.
 
 Designed for people who already run a coding agent (Claude Code, Codex,
