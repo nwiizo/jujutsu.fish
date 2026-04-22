@@ -19,6 +19,8 @@ function __jujutsu_fish_register_abbrs --description 'Register jujutsu.fish abbr
     abbr -a {$p}ds 'jj describe'
     abbr -a {$p}n 'jj new'
     abbr -a {$p}ed 'jj edit'
+    abbr -a {$p}nx 'jj next'
+    abbr -a {$p}pv 'jj prev'
 
     # Log
     abbr -a {$p}l 'jj log'
@@ -51,7 +53,11 @@ function __jujutsu_fish_register_abbrs --description 'Register jujutsu.fish abbr
     abbr -a {$p}gf 'jj git fetch'
     abbr -a {$p}gp 'jj git push'
     abbr -a {$p}gpa 'jj git push --allow-new'
+    abbr -a {$p}gpc 'jj git push --change @'
     abbr -a {$p}gc 'jj git clone'
+    abbr -a {$p}gr 'jj git remote'
+    abbr -a {$p}gra 'jj git remote add'
+    abbr -a {$p}grl 'jj git remote list'
 
     # Workspace
     abbr -a {$p}w 'jj workspace'
@@ -63,8 +69,8 @@ end
 function __jujutsu_fish_erase_abbrs --description 'Erase jujutsu.fish abbreviations'
     set -q jujutsu_fish_prefix; or set -g jujutsu_fish_prefix j
     set -l p $jujutsu_fish_prefix
-    for short in '' st sh d ds n ed l la lo sq sp ab rb dp bk an \
-        b bl bs bm bd bt op ou or gf gp gpa gc w wl wa wf
+    for short in '' st sh d ds n ed nx pv l la lo sq sp ab rb dp bk an \
+        b bl bs bm bd bt op ou or gf gp gpa gpc gc gr gra grl w wl wa wf
         abbr -e {$p}$short 2>/dev/null
     end
 end
