@@ -14,29 +14,28 @@ function jj_fzf_status --description 'Pick a changed file via fzf with diff prev
     #   D path/to/removed
     #   R old/path -> new/path
     #   C old/path -> new/path
-    # For renames/copies the destination is what the user wants to open —
-    # strip the status letter and any "old -> " prefix.
-    set -l lines (jj diff --summary 2>/dev/null)
+    # Reshape to <letter>\t<dest-path>. For rename/copy the destination is
+    # what the user cares about, so strip the "old -> " prefix here once.
+    # Tab-delimiting lets fzf pass the path directly as {2}; we avoid piping
+    # preview bodies through $SHELL and the argv-splitting that entailed.
+    set -l lines (jj diff --summary 2>/dev/null \
+        | string replace -r '^([A-Z]) (?:.* -> )?(.*)$' '$1'\t'$2')
     test (count $lines) -eq 0; and begin
         __jujutsu_fish_err 'working copy is clean'
         return 1
     end
 
-    # fzf runs preview commands through $SHELL, which may be bash/zsh on
-    # macOS defaults. Explicitly invoke fish so the preview body below is
-    # portable. The variable $p is set inside fish -c, not inherited.
-    set -l preview_cmd 'fish -c \'set p (string replace -r "^[A-Z] (.* -> )?" "" -- $argv[1]); jj diff --color=always -- $p\' fish {}'
-
     set -l selection (
         printf '%s\n' $lines \
         | fzf --no-sort \
               --prompt='jj diff > ' \
-              --preview=$preview_cmd \
+              --delimiter=\t --with-nth=1,2 \
+              --preview='jj diff --color=always --ignore-working-copy -- {2}' \
               --preview-window='right:65%:wrap'
     )
     test -z "$selection"; and return 130
 
-    set -l path (string replace -r '^[A-Z] (.* -> )?' '' -- $selection)
+    set -l path (string split -f2 \t -- $selection)
 
     # Determine the editor. $EDITOR may contain flags (e.g. "code --wait"),
     # so split on whitespace into a token array and invoke without `eval`.
